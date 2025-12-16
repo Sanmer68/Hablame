@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HÁBLAME – MVP</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app" id="appRoot">
+      <!-- BARRA SUPERIOR -->
+      <header class="topbar">
+        <div class="logo">HÁBLAME</div>
+
+        <nav class="top-tabs">
+          <button id="btnPersonajes" class="top-tab active">🧠 Personajes</button>
+          <button id="btnAsistentes" class="top-tab">👥 Asistentes</button>
+          <button id="btnJuegos" class="top-tab">🧘 Juegos y meditaciones</button>
+          <button id="btnForos" class="top-tab">💬 Foros</button>
+          <button id="btnAmigos" class="top-tab">❤️ Amigos</button>
+        </nav>
+
+        <!-- Selector de idioma -->
+        <div class="lang-wrapper">
+          <select id="languageSelect" class="lang-select">
+            <option value="es">ES</option>
+            <option value="en">EN</option>
+            <option value="pt">PT</option>
+          </select>
+        </div>
+      </header>
+
+      <!-- LAYOUT PRINCIPAL -->
+      <div class="layout">
+        <!-- PANEL IZQUIERDO -->
+        <aside class="sidebar">
+          <section class="section">
+            <h3 id="sidebarTitle">Personajes</h3>
+            <div id="profileList" class="chip-list"></div>
+          </section>
+        </aside>
+
+        <!-- PANEL DERECHO: CHAT -->
+        <main class="chat-area">
+          <header class="chat-header">
+            <!-- Flecha para móvil -->
+            <button id="backButton" class="back-btn" aria-label="Volver">
+              ←
+            </button>
+
+            <div class="chat-header-info">
+              <div class="chat-title" id="chatTitle">Chat con IA</div>
+              <div class="chat-subtitle" id="chatSubtitle">
+                Personaje: <span id="currentProfileName">—</span>
+              </div>
+            </div>
+          </header>
+
+          <!-- MENSAJES -->
+          <section id="chatWindow" class="messages"></section>
+
+          <!-- INPUT ABAJO -->
+          <footer class="chat-input">
+            <input
+              id="userInput"
+              type="text"
+              placeholder="Escribe un mensaje..."
+            />
+
+            <div class="chat-actions">
+              <button id="sendButton" class="btn-send">Enviar</button>
+              <button id="micButton" class="btn-mic">🎤</button>
+            </div>
+          </footer>
+        </main>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

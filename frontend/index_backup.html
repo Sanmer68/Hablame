@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>HÁBLAME - MVP</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <h2>HÁBLAME</h2>
+
+      <div class="section">
+        <h3>Personajes</h3>
+        <div id="characterSelector" class="chip-list"></div>
+      </div>
+
+      <div class="section" id="forumsSection">
+        <h3>Foros</h3>
+        <ul id="forumsList" class="list"></ul>
+      </div>
+
+      <div class="section">
+        <h3>Mi idioma</h3>
+        <select id="languageSelect"></select>
+      </div>
+    </aside>
+
+    <main class="chat-area">
+      <header class="chat-header">
+        <div>
+          <div class="chat-title" id="chatTitle">Chat con IA</div>
+          <div class="chat-subtitle">
+            Personaje: <span id="currentCharacterName"></span>
+          </div>
+        </div>
+        <div class="tab-group">
+          <button id="tabChat" class="tab tab--active">Chat IA</button>
+          <button id="tabForum" class="tab">Foro</button>
+        </div>
+      </header>
+
+      <section id="chatWindow" class="messages"></section>
+
+      <footer class="chat-input">
+        <input id="userInput" type="text" placeholder="Escribe un mensaje..." />
+        <button id="sendButton">Enviar</button>
+      </footer>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

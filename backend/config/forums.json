@@ -1,0 +1,16 @@
+{
+  "forums": [
+    {
+      "id": "general",
+      "name": "Foro general"
+    },
+    {
+      "id": "ayuda",
+      "name": "Ayuda y soporte"
+    },
+    {
+      "id": "motivacion",
+      "name": "Motivación diaria"
+    }
+  ]
+}
