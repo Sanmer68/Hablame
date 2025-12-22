@@ -1,5 +1,6 @@
 // ================= CONFIG ==========================
-const API_BASE = "https://hablame.onrender.com/api"
+const API_BASE = "https://hablame-backend.onrender.com"
+
 
 // ================= ESTADO ==========================
 let currentMode = "characters"; // characters | assistants | tools | forums | friends
