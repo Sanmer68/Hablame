@@ -532,4 +532,16 @@ function applyUILanguage() {
   document.getElementById("userInput").placeholder = t.placeholder;
 
   renderSidebar();
-}
+}// ================== INICIO DE LA APP (AUTORUN) ==================
+document.addEventListener("DOMContentLoaded", () => {
+  try { if (typeof loadLangFromStorage === "function") loadLangFromStorage(); } catch (e) {}
+  try { if (typeof applyUILanguage === "function") applyUILanguage(); } catch (e) {}
+
+  // Intenta arrancar con la función principal si existe
+  try { if (typeof init === "function") init(); } catch (e) {}
+
+  // Fallbacks seguros: si existen, cargan lista y pintan sidebar
+  try { if (typeof loadCharacters === "function") loadCharacters(); } catch (e) {}
+  try { if (typeof renderSidebar === "function") renderSidebar(); } catch (e) {}
+});
+
