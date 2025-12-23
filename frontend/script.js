@@ -455,7 +455,7 @@ async function sendToAI(text) {
       systemPrompt: systemInstruction, // 👈 esto arregla “Marco en todo”
     };
 
-    const res = await fetch(`${API_BASE}/chat`, {
+    const res = await fetch(`${API_BASE}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
