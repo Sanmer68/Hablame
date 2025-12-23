@@ -11,20 +11,6 @@ const OpenAI = require("openai");
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-
-(async () => {
-  try {
-    const test = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: "Di OK" }],
-    });
-    console.log("✅ OpenAI RESPONDE:", test.choices[0].message.content);
-  } catch (e) {
-    console.error("❌ ERROR OpenAI:", e.message);
-  }
-})();
-
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
