@@ -37,17 +37,23 @@ body {
 
 /* ---------- HEADER SUPERIOR ---------- */
 .topbar {
+  position: sticky;
+  top: env(safe-area-inset-top);
+  z-index: 10;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 22px;
-  border-bottom: 1px solid #e2e8f0;
-  background: #ffffff;
-  padding-top: env(safe-area-inset-top);
-height: calc(56px + env(safe-area-inset-top));
 
+  padding: 16px 22px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
 }
+
+
 
 .logo {
   font-weight: 800;
