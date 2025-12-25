@@ -38,7 +38,7 @@ body {
 /* ---------- HEADER SUPERIOR ---------- */
 .topbar {
   position: sticky;
-  top: env(safe-area-inset-top);
+  top: 0;
   z-index: 10;
 
   display: flex;
