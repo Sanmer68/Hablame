@@ -44,6 +44,9 @@ body {
   padding: 16px 22px;
   border-bottom: 1px solid #e2e8f0;
   background: #ffffff;
+  padding-top: env(safe-area-inset-top);
+height: calc(56px + env(safe-area-inset-top));
+
 }
 
 .logo {
