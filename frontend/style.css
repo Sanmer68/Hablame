@@ -324,15 +324,26 @@ body {
 
 /* ---------- RESPONSIVE: MÓVIL ---------- */
 @media (max-width: 768px) {
-  body {
+  body{
     background: #ffffff;
   }
 
-  .app {
-    height: 100vh;
+  .app{
+    width: 100%;
     max-width: 100%;
     border-radius: 0;
+
+    /* 👇 CLAVE: NO uses height fija en móvil */
+    height: auto;
+    min-height: 100svh;  /* iPhone moderno */
+    min-height: 100vh;   /* fallback */
+
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
+}
+
 
   .layout {
     grid-template-columns: 1fr;
