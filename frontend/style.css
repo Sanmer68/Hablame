@@ -366,4 +366,59 @@ body {
     align-items: center;
     justify-content: center;
   }
+}/* =========================
+   FIX iPhone / MÓVIL (NO BORRAR)
+   ========================= */
+@media (max-width: 768px) {
+
+  html, body {
+    height: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Evita el “corte” por alturas fijas y por el Safari de iPhone */
+  body {
+    padding-top: 0 !important;
+    min-height: 100svh;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* IMPORTANTÍSIMO: si tu .app tenía height: 650px o max-width: 1100px, aquí lo anulamos */
+  .app {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100svh !important;
+    height: 100dvh !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Barra superior visible (safe area / notch) */
+  .topbar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 999 !important;
+    padding-top: env(safe-area-inset-top) !important;
+  }
+
+  /* Si tu layout es flex/grid, esto evita que el contenido “se salga” */
+  .layout, .chat-area {
+    min-height: 0 !important;
+  }
+
+  /* Área de mensajes: que sea la que scrollea, no toda la página */
+  .chat-messages, .messages, .chatMessages {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Input pegado abajo y respeta el safe area inferior */
+  .chat-input, .input-area, .composer, .bottom-bar {
+    padding-bottom: env(safe-area-inset-bottom) !important;
+  }
 }
+
