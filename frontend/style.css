@@ -424,5 +424,30 @@ body {
   .chat-input, .input-area, .composer, .bottom-bar {
     padding-bottom: env(safe-area-inset-bottom) !important;
   }
+/* =========================
+   TOP TABS: scroll horizontal en móvil
+   ========================= */
+
+.top-tabs{
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;                 /* CLAVE: permite que el flex no "rompa" */
+  gap: 8px;
+
+  overflow-x: auto;             /* CLAVE: permite ver más botones */
+  overflow-y: hidden;
+  white-space: nowrap;
+
+  -webkit-overflow-scrolling: touch;
+  padding: 6px 8px;
+}
+
+.top-tabs::-webkit-scrollbar{
+  display: none;
+}
+
+.top-tab{
+  flex: 0 0 auto;               /* cada botón NO se encoge */
+}
 
 
