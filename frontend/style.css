@@ -424,5 +424,5 @@ body {
   .chat-input, .input-area, .composer, .bottom-bar {
     padding-bottom: env(safe-area-inset-bottom) !important;
   }
-}
+
 
