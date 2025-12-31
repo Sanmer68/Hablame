@@ -12,6 +12,13 @@ let username = "Tú";
 let characters = [];
 const chatsByKey = {}; // memoria en runtime
 let storedChats = {};  // copia de localStorage
+let characters = [];
+const chatsByKey = {};
+let storedChats = {};
+
+let dataLoaded = false;
+let loadingPromise = null;
+
 
 // ================= DATA: ASISTENTES ===============
 const ASSISTANTS_DATA = [
@@ -162,7 +169,12 @@ async function initApp() {
 
 // ================= SETUP UI ========================
 function setupButtons() {
-  document.getElementById("btnPersonajes").addEventListener("click", () => switchMode("characters"));
+  document.getElementById("btnPersonajes")
+  .addEventListener("click", async () => {
+    await ensureCharactersLoaded();
+    switchMode("characters");
+  });
+
   document.getElementById("btnAsistentes").addEventListener("click", () => switchMode("assistants"));
   document.getElementById("btnJuegos").addEventListener("click", () => switchMode("tools")); // 👈 ahora es herramientas
   document.getElementById("btnForos").addEventListener("click", () => switchMode("forums"));
@@ -239,11 +251,25 @@ async function loadCharacters() {
     console.warn("No se pudo cargar /api/characters, usando lista local");
     characters = [
       { id: "marco", name: "Marco Aurelio", system: "Eres Marco Aurelio..." },
-      { id: "biblia", name: "Biblia", system: "Eres un guía basado en textos bíblicos..." },
+      { id: "biblia", name: "Biblia", system: "Eres un guía..." },
       { id: "seneca", name: "Séneca", system: "Eres Séneca..." },
-      { id: "sor_juana", name: "Sor Juana", system: "Eres Sor Juana Inés de la Cruz..." },
+      { id: "sor_juana", name: "Sor Juana", system: "Eres Sor Juana Inés..." },
     ];
+  } finally {
+    dataLoaded = true;
   }
+}
+async function ensureCharactersLoaded() {
+  if (dataLoaded && characters.length) return;
+
+  if (!loadingPromise) {
+    loadingPromise = (async () => {
+      await loadCharacters();
+      loadingPromise = null;
+    })();
+  }
+
+  await loadingPromise;
 }
 
 // ================= RENDER SIDEBAR ==================
