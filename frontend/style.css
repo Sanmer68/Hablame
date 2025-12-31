@@ -1,8 +1,5 @@
 /* ---------- RESET SIMPLE ---------- */
 
-body { 
-  outline: 8px solid red !important; 
-}
 
 * {
   box-sizing: border-box;
