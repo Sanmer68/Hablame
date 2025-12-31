@@ -1,483 +1,540 @@
-/* =========================================================
-   HÁBLAME — Frontend script (clean MVP)
-   - Loads characters/assistants once (with fallback)
-   - Switch tabs without "double click" bug
-   - Chat history per profile (localStorage)
-   - Language ES/EN/PT
-   ========================================================= */
+/* =========================
+   HÁBLAME — frontend/script.js
+   Objetivo:
+   - Un solo arranque (sin duplicados)
+   - Personajes SIEMPRE cargan antes de render
+   - No más “picar y regresar”
+   ========================= */
 
-(() => {
-  // -----------------------------
-  // CONFIG
-  // -----------------------------
-  const API_BASE = ""; // "" = same domain. If needed: "https://tu-backend.com"
-  const LS_KEY = "hablame_chats_v1";
-  const LS_LANG = "hablame_lang_v1";
-  const USERNAME = "Tú";
+/* ========= CONFIG ========= */
+const API_BASE = ""; // si ya usas algo, déjalo como lo tenías. Ej: "https://hablame.io"
+let currentMode = "characters"; // characters | assistants | tools | forums | friends
+let currentProfileId = null;
+let currentProfileName = "—";
+let currentLang = "es";
 
-  // -----------------------------
-  // STATE
-  // -----------------------------
-  const state = {
-    mode: "characters", // characters | assistants | tools | forums | friends
-    lang: localStorage.getItem(LS_LANG) || "es",
-    characters: [],
-    assistants: [],
-    loaded: {
-      characters: false,
-      assistants: false,
-    },
-    currentProfile: null, // { type, id, name, system }
-    chats: loadAllChats(),
-    isSending: false,
-  };
+/* ========= DATA EN MEMORIA ========= */
+let characters = [];
+let dataLoaded = false;
+let loadingPromise = null;
 
-  // -----------------------------
-  // DOM (IDs must match your HTML)
-  // -----------------------------
-  const dom = {
-    // top tabs
-    btnPersonajes: document.getElementById("btnPersonajes"),
-    btnAsistentes: document.getElementById("btnAsistentes"),
-    btnJuegos: document.getElementById("btnJuegos"),
-    btnForos: document.getElementById("btnForos"),
-    btnAmigos: document.getElementById("btnAmigos"),
+// Chats
+const chatsByKey = {};   // runtime
+let storedChats = {};    // copia de localStorage
 
-    // language selector (if exists)
-    langSelect: document.getElementById("langSelect") || document.getElementById("languageSelect"),
+/* ========= TEXTOS UI ========= */
+const UI_TEXT = {
+  es: {
+    tabCharacters: "🧠 Personajes",
+    tabAssistants: "👥 Asistentes",
+    tabTools: "🧘 Herramientas de calma",
+    tabForums: "💬 Foro",
+    tabFriends: "❤️ Amigos",
 
-    // left list + title area
-    listTitle: document.getElementById("listTitle"),
-    listContainer: document.getElementById("profilesList") || document.getElementById("sidebarList"),
+    sidebarCharacters: "Personajes",
+    sidebarAssistants: "Asistentes",
+    sidebarTools: "Herramientas de calma",
+    sidebarForums: "Foro",
+    sidebarFriends: "Amigos",
 
-    // chat area
-    screenTitle: document.getElementById("screenTitle"),
-    screenSubtitle: document.getElementById("screenSubtitle"),
-    messages: document.getElementById("messages") || document.getElementById("chatMessages"),
-    input: document.getElementById("userInput"),
-    sendBtn: document.getElementById("sendButton"),
+    chatTitle: "Chat con IA",
+    placeholder: "Escribe un mensaje...",
+    noProfileSelected: "Elige primero un personaje o asistente.",
+    forumsConstruction: "Los foros están en construcción.",
+    friendsConstruction: "La sección de amigos está en construcción.",
+    toolsInfo: "Elige una herramienta de calma y escribe para que te guíe.",
+  },
+  en: {
+    tabCharacters: "🧠 Characters",
+    tabAssistants: "👥 Assistants",
+    tabTools: "🧘 Calm tools",
+    tabForums: "💬 Forums",
+    tabFriends: "❤️ Friends",
 
-    // optional back button on mobile
-    backBtn: document.getElementById("btnBack") || document.getElementById("backButton"),
-  };
+    sidebarCharacters: "Characters",
+    sidebarAssistants: "Assistants",
+    sidebarTools: "Calm tools",
+    sidebarForums: "Forums",
+    sidebarFriends: "Friends",
 
-  // If your HTML uses different IDs, tell me and I te lo ajusto exacto.
-  // For now, script tries common IDs.
+    chatTitle: "AI Chat",
+    placeholder: "Type a message...",
+    noProfileSelected: "Choose a character or assistant first.",
+    forumsConstruction: "Forums are under construction.",
+    friendsConstruction: "Friends section is under construction.",
+    toolsInfo: "Choose a calm tool and type so it can guide you.",
+  },
+  pt: {
+    tabCharacters: "🧠 Personagens",
+    tabAssistants: "👥 Assistentes",
+    tabTools: "🧘 Ferramentas de calma",
+    tabForums: "💬 Fóruns",
+    tabFriends: "❤️ Amigos",
 
-  // -----------------------------
-  // FALLBACK DATA (if API fails)
-  // -----------------------------
-  const FALLBACK_CHARACTERS = [
-    { id: "marco", name: "Marco Aurelio", system: "Eres Marco Aurelio. Responde con calma, claridad y reflexión práctica." },
-    { id: "biblia", name: "Biblia", system: "Eres un guía basado en enseñanzas bíblicas. Responde con compasión y prudencia." },
-    { id: "seneca", name: "Séneca", system: "Eres Séneca. Responde estoicamente, directo y con enfoque en virtud." },
-    { id: "sor_juana", name: "Sor Juana", system: "Eres Sor Juana Inés. Responde con inteligencia, firmeza y sensibilidad." },
-  ];
+    sidebarCharacters: "Personagens",
+    sidebarAssistants: "Assistentes",
+    sidebarTools: "Ferramentas de calma",
+    sidebarForums: "Fóruns",
+    sidebarFriends: "Amigos",
 
-  const FALLBACK_ASSISTANTS = [
-    { id: "chef_elena", name: "Chef Elena – Cocina", system: "Solo hablas de cocina, recetas y nutrición básica. Si preguntan otra cosa, redirige a cocina." },
-    { id: "dinero_gastos", name: "Dinero – Solo gastos", system: "Solo ayudas a registrar gastos, categorías y resúmenes. No das consejos de inversión." },
-    { id: "viajes", name: "Viajes", system: "Ayudas a planear viajes (itinerarios, presupuesto y tips)."},
-    { id: "acompanamiento", name: "Acompañamiento", system: "Acompañas emocionalmente sin juzgar, con preguntas claras y calma." },
-    { id: "fitness", name: "Mateo en movimiento – Fitness", system: "Solo das rutinas y consejos de ejercicio seguro. Recomiendas consultar médico si hay dolor/condición." },
-  ];
+    chatTitle: "Chat com IA",
+    placeholder: "Escreva uma mensagem...",
+    noProfileSelected: "Escolha primeiro um personagem ou assistente.",
+    forumsConstruction: "Os fóruns estão em construção.",
+    friendsConstruction: "A seção de amigos está em construção.",
+    toolsInfo: "Escolha uma ferramenta de calma e escreva para ela te guiar.",
+  },
+};
 
-  // -----------------------------
-  // INIT
-  // -----------------------------
-  document.addEventListener("DOMContentLoaded", init);
+/* ========= ASISTENTES (ejemplo) ========= */
+const ASSISTANTS_DATA = [
+  { id: "chef_elena", name: "Chef Elena — Cocina y recetas", system: "Eres Chef Elena. Solo hablas de cocina." },
+  { id: "mateo_fitness", name: "Mateo — Fitness", system: "Eres Mateo. Solo hablas de fitness con prudencia." },
+  { id: "dinero_gastos", name: "Dinero — Solo gastos", system: "Solo ayudas a registrar gastos, no inversión." },
+  { id: "viajes", name: "Viajes", system: "Ayudas a planear viajes." },
+  { id: "acompanamiento", name: "Acompañamiento", system: "Acompañas emocionalmente sin juzgar." },
+];
 
-  function init() {
-    // language
-    syncLangUI();
+/* ========= HERRAMIENTAS (demo) ========= */
+const TOOLS_DATA = [
+  { id: "respiracion", name: "Respiración 1 minuto", description: "Respira 4-4-6 por 1 minuto." },
+  { id: "anclaje", name: "Anclaje 5-4-3-2-1", description: "Ejercicio sensorial para calmar la mente." },
+];
 
-    // buttons
-    setupButtons();
+/* ================= INICIO ================= */
+window.addEventListener("DOMContentLoaded", initApp);
 
-    // send
-    setupSend();
+async function initApp() {
+  loadLangFromStorage();
+  loadChatsFromStorage();
+  applyUILanguage();
 
-    // initial load + render
-    boot().catch(console.error);
-  }
+  setupButtons();
+  setupSend();
+  setupMobileView();
+  setupLanguageSelector();
 
-  async function boot() {
+  // IMPORTANTE: aquí garantizamos carga
+  await ensureCharactersLoaded();
+
+  currentMode = "characters";
+  renderSidebar();
+  selectDefaultProfile(); // elige primer personaje
+  renderChatForCurrentProfile();
+}
+
+/* ================= SETUP UI ================= */
+function setupButtons() {
+  const btnPersonajes = document.getElementById("btnPersonajes");
+  const btnAsistentes = document.getElementById("btnAsistentes");
+  const btnJuegos = document.getElementById("btnJuegos");
+  const btnForos = document.getElementById("btnForos");
+  const btnAmigos = document.getElementById("btnAmigos");
+
+  // ✅ CLAVE: este click es async y espera carga
+  btnPersonajes.addEventListener("click", async () => {
     await ensureCharactersLoaded();
-    // if there's a last profile saved, you could restore here. For now keep simple.
-    if (!state.currentProfile) {
-      state.currentProfile = { type: "character", ...state.characters[0] };
-    }
-    renderAll();
-  }
+    switchMode("characters");
+    // si no hay perfil, elige uno automático
+    if (!currentProfileId) selectDefaultProfile();
+    renderChatForCurrentProfile();
+  });
 
-  // -----------------------------
-  // BUTTONS / NAV
-  // -----------------------------
-  function setupButtons() {
-    if (dom.btnPersonajes) {
-      dom.btnPersonajes.addEventListener("click", async () => {
-        await ensureCharactersLoaded();
-        setMode("characters");
-      });
-    }
+  btnAsistentes.addEventListener("click", () => {
+    switchMode("assistants");
+    renderChatForCurrentProfile();
+  });
 
-    if (dom.btnAsistentes) {
-      dom.btnAsistentes.addEventListener("click", async () => {
-        await ensureAssistantsLoaded();
-        setMode("assistants");
-      });
-    }
+  // Nota: btnJuegos lo usamos como herramientas de calma
+  btnJuegos.addEventListener("click", () => {
+    switchMode("tools");
+    renderChatForCurrentProfile();
+  });
 
-    if (dom.btnJuegos) dom.btnJuegos.addEventListener("click", () => setMode("tools"));
-    if (dom.btnForos) dom.btnForos.addEventListener("click", () => setMode("forums"));
-    if (dom.btnAmigos) dom.btnAmigos.addEventListener("click", () => setMode("friends"));
+  btnForos.addEventListener("click", () => {
+    switchMode("forums");
+    renderChatForCurrentProfile();
+  });
 
-    if (dom.langSelect) {
-      dom.langSelect.value = state.lang;
-      dom.langSelect.addEventListener("change", () => {
-        const v = dom.langSelect.value;
-        if (!["es", "en", "pt"].includes(v)) return;
-        state.lang = v;
-        localStorage.setItem(LS_LANG, v);
-        renderHeader();
-        renderMessages();
-      });
-    }
+  btnAmigos.addEventListener("click", () => {
+    switchMode("friends");
+    renderChatForCurrentProfile();
+  });
+}
 
-    if (dom.backBtn) {
-      dom.backBtn.addEventListener("click", () => {
-        // optional: go back to list on mobile (depends on your CSS)
-        document.body.classList.remove("chat-open");
-      });
-    }
-  }
+function setupSend() {
+  const sendBtn = document.getElementById("sendButton");
+  const input = document.getElementById("userInput");
 
-  function setMode(mode) {
-    state.mode = mode;
-    highlightTopTabs();
-    renderList();
-    renderHeader();
-    renderMessages();
-  }
-
-  function highlightTopTabs() {
-    const map = {
-      characters: dom.btnPersonajes,
-      assistants: dom.btnAsistentes,
-      tools: dom.btnJuegos,
-      forums: dom.btnForos,
-      friends: dom.btnAmigos,
-    };
-    Object.values(map).forEach((btn) => btn && btn.classList.remove("active"));
-    const b = map[state.mode];
-    if (b) b.classList.add("active");
-  }
-
-  // -----------------------------
-  // LOADERS
-  // -----------------------------
-  async function ensureCharactersLoaded() {
-    if (state.loaded.characters) return;
-    state.characters = await fetchList("/api/characters", "characters", FALLBACK_CHARACTERS);
-    state.loaded.characters = true;
-  }
-
-  async function ensureAssistantsLoaded() {
-    if (state.loaded.assistants) return;
-    state.assistants = await fetchList("/api/assistants", "assistants", FALLBACK_ASSISTANTS);
-    state.loaded.assistants = true;
-  }
-
-  async function fetchList(path, key, fallback) {
-    try {
-      const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      // expects {characters:[...]} or {assistants:[...]} or direct array
-      const list = Array.isArray(data) ? data : (data[key] || []);
-      if (!Array.isArray(list) || list.length === 0) return fallback;
-      return list.map(normalizeProfile);
-    } catch (e) {
-      console.warn(`No se pudo cargar ${path}, usando fallback`, e);
-      return fallback.map(normalizeProfile);
-    }
-  }
-
-  function normalizeProfile(p) {
-    return {
-      id: String(p.id || "").trim(),
-      name: String(p.name || "").trim(),
-      system: String(p.system || "").trim(),
-    };
-  }
-
-  // -----------------------------
-  // RENDER
-  // -----------------------------
-  function renderAll() {
-    highlightTopTabs();
-    renderList();
-    renderHeader();
-    renderMessages();
-    syncLangUI();
-  }
-
-  function renderHeader() {
-    const p = state.currentProfile;
-    if (!dom.screenTitle) return;
-
-    dom.screenTitle.textContent = "Chat con IA";
-
-    if (dom.screenSubtitle) {
-      if (!p) {
-        dom.screenSubtitle.textContent = "";
-      } else {
-        const label = p.type === "assistant" ? "Asistente" : "Personaje";
-        dom.screenSubtitle.textContent = `${label}: ${p.name}`;
-      }
-    }
-  }
-
-  function renderList() {
-    // Update list title
-    if (dom.listTitle) {
-      if (state.mode === "characters") dom.listTitle.textContent = "Personajes";
-      else if (state.mode === "assistants") dom.listTitle.textContent = "Asistentes";
-      else if (state.mode === "tools") dom.listTitle.textContent = "Herramientas de calma";
-      else if (state.mode === "forums") dom.listTitle.textContent = "Foros";
-      else if (state.mode === "friends") dom.listTitle.textContent = "Amigos";
-    }
-
-    if (!dom.listContainer) return;
-
-    // Clear
-    dom.listContainer.innerHTML = "";
-
-    if (state.mode === "characters") {
-      buildList(state.characters, "character");
-      return;
-    }
-
-    if (state.mode === "assistants") {
-      buildList(state.assistants, "assistant");
-      return;
-    }
-
-    // Other tabs (placeholder)
-    const li = document.createElement("div");
-    li.className = "list-item placeholder";
-    li.textContent = "En construcción 🙂";
-    dom.listContainer.appendChild(li);
-  }
-
-  function buildList(items, type) {
-    if (!items || items.length === 0) return;
-
-    items.forEach((item) => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "list-item";
-
-      const active = state.currentProfile && state.currentProfile.id === item.id && state.currentProfile.type === type;
-      if (active) btn.classList.add("active");
-
-      btn.textContent = item.name;
-
-      btn.addEventListener("click", () => {
-        state.currentProfile = { type, ...item };
-        renderHeader();
-        renderMessages();
-
-        // optional: on mobile show chat
-        document.body.classList.add("chat-open");
-      });
-
-      dom.listContainer.appendChild(btn);
-    });
-  }
-
-  function renderMessages() {
-    if (!dom.messages) return;
-
-    dom.messages.innerHTML = "";
-
-    const p = state.currentProfile;
-    if (!p) return;
-
-    const chatKey = getChatKey(p);
-    const msgs = state.chats[chatKey] || [];
-
-    msgs.forEach((m) => {
-      dom.messages.appendChild(renderBubble(m.role, m.text));
-    });
-
-    scrollToBottom();
-  }
-
-  function renderBubble(role, text) {
-    const wrap = document.createElement("div");
-    wrap.className = `msg ${role === "user" ? "user" : "assistant"}`;
-
-    const bubble = document.createElement("div");
-    bubble.className = "bubble";
-    bubble.textContent = text;
-
-    wrap.appendChild(bubble);
-    return wrap;
-  }
-
-  function scrollToBottom() {
-    if (!dom.messages) return;
-    // delay to ensure layout
-    setTimeout(() => {
-      dom.messages.scrollTop = dom.messages.scrollHeight;
-    }, 0);
-  }
-
-  function syncLangUI() {
-    if (dom.langSelect) {
-      dom.langSelect.value = state.lang;
-    }
-  }
-
-  // -----------------------------
-  // SEND MESSAGE
-  // -----------------------------
-  function setupSend() {
-    if (!dom.sendBtn || !dom.input) return;
-
-    dom.sendBtn.addEventListener("click", () => handleSend());
-
-    dom.input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        handleSend();
-      }
-    });
-  }
-
-  async function handleSend() {
-    if (state.isSending) return;
-    const p = state.currentProfile;
-    if (!p) return;
-
-    const text = (dom.input?.value || "").trim();
+  sendBtn.addEventListener("click", async () => {
+    const text = input.value.trim();
     if (!text) return;
+    await sendToAI(text);
+    input.value = "";
+  });
 
-    // UI: append user message
-    pushMessage(p, "user", text);
-    dom.input.value = "";
-    renderMessages();
-
-    state.isSending = true;
-    setSendDisabled(true);
-
-    try {
-      const reply = await askAI({
-        profile: p,
-        userText: text,
-        lang: state.lang,
-        history: getHistoryForRequest(p, 12),
-      });
-
-      pushMessage(p, "assistant", reply);
-      renderMessages();
-    } catch (err) {
-      console.warn(err);
-      pushMessage(p, "assistant", "⚠️ Hubo un problema al responder. Intenta de nuevo.");
-      renderMessages();
-    } finally {
-      state.isSending = false;
-      setSendDisabled(false);
+  input.addEventListener("keydown", async (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      await sendToAI(text);
+      input.value = "";
     }
+  });
+}
+
+function setupMobileView() {
+  const appRoot = document.getElementById("appRoot");
+  const backBtn = document.getElementById("backButton");
+  if (!backBtn) return;
+  backBtn.addEventListener("click", () => appRoot.classList.remove("mobile-chat"));
+}
+
+function setupLanguageSelector() {
+  const select = document.getElementById("languageSelect");
+  if (!select) return;
+
+  select.value = currentLang;
+  select.addEventListener("change", () => {
+    currentLang = select.value;
+    saveLangToStorage();
+    applyUILanguage();
+    renderSidebar();
+    renderChatForCurrentProfile();
+  });
+}
+
+/* ================= MODOS ================= */
+function switchMode(mode) {
+  currentMode = mode;
+  currentProfileId = null;
+  currentProfileName = "—";
+  const nameEl = document.getElementById("currentProfileName");
+  if (nameEl) nameEl.textContent = "—";
+
+  // tabs active
+  document.querySelectorAll(".top-tab").forEach((b) => b.classList.remove("active"));
+  if (mode === "characters") document.getElementById("btnPersonajes")?.classList.add("active");
+  if (mode === "assistants") document.getElementById("btnAsistentes")?.classList.add("active");
+  if (mode === "tools") document.getElementById("btnJuegos")?.classList.add("active");
+  if (mode === "forums") document.getElementById("btnForos")?.classList.add("active");
+  if (mode === "friends") document.getElementById("btnAmigos")?.classList.add("active");
+
+  clearChat();
+  renderSidebar();
+}
+
+/* ================= CARGA PERSONAJES ================= */
+async function loadCharacters() {
+  try {
+    const res = await fetch(`${API_BASE}/api/characters`);
+    const data = await res.json();
+    characters = data.characters || [];
+  } catch (err) {
+    console.warn("No se pudo cargar /api/characters, usando lista local");
+    characters = [
+      { id: "marco", name: "Marco Aurelio", system: "Eres Marco Aurelio." },
+      { id: "biblia", name: "Biblia", system: "Eres un guía basado en la Biblia." },
+      { id: "seneca", name: "Séneca", system: "Eres Séneca." },
+      { id: "sor_juana", name: "Sor Juana", system: "Eres Sor Juana Inés." },
+    ];
+  } finally {
+    dataLoaded = true;
+  }
+}
+
+async function ensureCharactersLoaded() {
+  if (dataLoaded && characters.length) return;
+
+  if (!loadingPromise) {
+    loadingPromise = (async () => {
+      await loadCharacters();
+      loadingPromise = null;
+    })();
+  }
+  await loadingPromise;
+}
+
+/* ================= RENDER SIDEBAR ================= */
+function renderSidebar() {
+  const titleEl = document.getElementById("sidebarTitle");
+  const listEl = document.getElementById("profileList");
+  if (!titleEl || !listEl) return;
+
+  listEl.innerHTML = "";
+  const t = UI_TEXT[currentLang] || UI_TEXT.es;
+
+  if (currentMode === "characters") {
+    titleEl.textContent = t.sidebarCharacters;
+    // ✅ si no están, mostramos “cargando” y salimos
+    if (!dataLoaded || !characters.length) {
+      const msg = document.createElement("div");
+      msg.style.opacity = "0.7";
+      msg.textContent = "Cargando...";
+      listEl.appendChild(msg);
+      return;
+    }
+
+    characters.forEach((ch) => {
+      const btn = document.createElement("button");
+      btn.className = "chip" + (ch.id === currentProfileId ? " chip--active" : "");
+      btn.textContent = ch.name;
+      btn.onclick = () => selectProfile(ch.id, ch.name);
+      listEl.appendChild(btn);
+    });
+    return;
   }
 
-  function setSendDisabled(disabled) {
-    if (dom.sendBtn) dom.sendBtn.disabled = disabled;
-    if (dom.input) dom.input.disabled = disabled;
+  if (currentMode === "assistants") {
+    titleEl.textContent = t.sidebarAssistants;
+    ASSISTANTS_DATA.forEach((as) => {
+      const btn = document.createElement("button");
+      btn.className = "chip" + (as.id === currentProfileId ? " chip--active" : "");
+      btn.textContent = as.name;
+      btn.onclick = () => selectProfile(as.id, as.name);
+      listEl.appendChild(btn);
+    });
+    return;
   }
 
-  function getHistoryForRequest(profile, maxPairs = 10) {
-    const chatKey = getChatKey(profile);
-    const msgs = state.chats[chatKey] || [];
-    // take last N messages
-    return msgs.slice(Math.max(0, msgs.length - maxPairs * 2));
+  if (currentMode === "tools") {
+    titleEl.textContent = t.sidebarTools;
+    TOOLS_DATA.forEach((tool) => {
+      const btn = document.createElement("button");
+      btn.className = "chip" + (tool.id === currentProfileId ? " chip--active" : "");
+      btn.textContent = tool.name;
+      btn.onclick = () => selectTool(tool);
+      listEl.appendChild(btn);
+    });
+    return;
   }
 
-  function pushMessage(profile, role, text) {
-    const chatKey = getChatKey(profile);
-    if (!state.chats[chatKey]) state.chats[chatKey] = [];
-    state.chats[chatKey].push({ role, text, ts: Date.now() });
-
-    saveAllChats(state.chats);
+  if (currentMode === "forums") {
+    titleEl.textContent = t.sidebarForums;
+    const li = document.createElement("div");
+    li.textContent = t.forumsConstruction;
+    listEl.appendChild(li);
+    return;
   }
 
-  function getChatKey(profile) {
-    // separate chats by type + id + lang (optional)
-    // If you want SAME chat across languages, remove `:${state.lang}`
-    return `${profile.type}:${profile.id}:${state.lang}`;
+  if (currentMode === "friends") {
+    titleEl.textContent = t.sidebarFriends;
+    const li = document.createElement("div");
+    li.textContent = t.friendsConstruction;
+    listEl.appendChild(li);
+  }
+}
+
+/* ================= PERFIL ACTUAL ================= */
+function selectDefaultProfile() {
+  if (currentMode === "characters" && characters.length > 0) {
+    selectProfile(characters[0].id, characters[0].name);
+  }
+  if (currentMode === "assistants" && ASSISTANTS_DATA.length > 0) {
+    selectProfile(ASSISTANTS_DATA[0].id, ASSISTANTS_DATA[0].name);
+  }
+}
+
+function selectProfile(id, name) {
+  currentProfileId = id;
+  currentProfileName = name;
+  document.getElementById("currentProfileName").textContent = name;
+
+  renderSidebar();
+  renderChatForCurrentProfile();
+
+  if (window.innerWidth <= 768) {
+    document.getElementById("appRoot").classList.add("mobile-chat");
+  }
+}
+
+function selectTool(tool) {
+  currentMode = "tools";
+  currentProfileId = tool.id;
+  currentProfileName = tool.name;
+  document.getElementById("currentProfileName").textContent = tool.name;
+
+  renderSidebar();
+  clearChat();
+
+  appendMessage(
+    "HÁBLAME",
+    `${tool.name}\n\n${tool.description}\n\n${(UI_TEXT[currentLang] || UI_TEXT.es).toolsInfo}`,
+    "received"
+  );
+
+  if (window.innerWidth <= 768) {
+    document.getElementById("appRoot").classList.add("mobile-chat");
+  }
+}
+
+/* ================= CHAT / HISTORIAL ================= */
+function getCurrentKey() {
+  if (!currentProfileId) return null;
+  return `${currentMode}:${currentProfileId}`;
+}
+
+function getCurrentChatArray() {
+  const key = getCurrentKey();
+  if (!key) return [];
+  if (!chatsByKey[key]) chatsByKey[key] = storedChats[key] ? [...storedChats[key]] : [];
+  return chatsByKey[key];
+}
+
+function saveChatsToStorage() {
+  try {
+    localStorage.setItem("hablame_chats", JSON.stringify(chatsByKey));
+  } catch {}
+}
+
+function loadChatsFromStorage() {
+  try {
+    const raw = localStorage.getItem("hablame_chats");
+    storedChats = raw ? JSON.parse(raw) : {};
+  } catch {
+    storedChats = {};
+  }
+}
+
+/* ================= UI IDIOMA ================= */
+function loadLangFromStorage() {
+  try {
+    const stored = localStorage.getItem("hablame_lang");
+    if (stored) currentLang = stored;
+  } catch {}
+}
+
+function saveLangToStorage() {
+  try {
+    localStorage.setItem("hablame_lang", currentLang);
+  } catch {}
+}
+
+function applyUILanguage() {
+  const t = UI_TEXT[currentLang] || UI_TEXT.es;
+
+  document.getElementById("btnPersonajes").textContent = t.tabCharacters;
+  document.getElementById("btnAsistentes").textContent = t.tabAssistants;
+  document.getElementById("btnJuegos").textContent = t.tabTools;
+  document.getElementById("btnForos").textContent = t.tabForums;
+  document.getElementById("btnAmigos").textContent = t.tabFriends;
+
+  document.getElementById("chatTitle").textContent = t.chatTitle;
+  document.getElementById("userInput").placeholder = t.placeholder;
+}
+
+/* ================= RENDER CHAT ================= */
+function renderChatForCurrentProfile() {
+  const t = UI_TEXT[currentLang] || UI_TEXT.es;
+
+  if (!currentProfileId) {
+    clearChat();
+    appendMessage("HÁBLAME", t.noProfileSelected, "received");
+    return;
   }
 
-  // -----------------------------
-  // API CALL
-  // -----------------------------
-  async function askAI({ profile, userText, lang, history }) {
-    // Payload expected by your backend:
-    // { profile: {...}, message, lang, history }
-    const payload = {
-      profile: {
-        type: profile.type,
-        id: profile.id,
-        name: profile.name,
-        system: profile.system,
-      },
-      message: userText,
-      lang,
-      history,
-    };
+  clearChat();
+  const chat = getCurrentChatArray();
+  chat.forEach((m) => appendMessage(m.sender, m.text, m.type, false));
+  scrollToBottom();
+}
+
+function clearChat() {
+  const list = document.getElementById("messages");
+  if (list) list.innerHTML = "";
+}
+
+function appendMessage(sender, text, type = "received", doScroll = true) {
+  const list = document.getElementById("messages");
+  if (!list) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "msg " + (type === "sent" ? "msg--sent" : "msg--received");
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.textContent = text;
+
+  wrap.appendChild(bubble);
+  list.appendChild(wrap);
+
+  if (doScroll) scrollToBottom();
+}
+
+function scrollToBottom() {
+  const list = document.getElementById("messages");
+  if (!list) return;
+  list.scrollTop = list.scrollHeight;
+}
+
+/* ================= IA ================= */
+function buildSystemPrompt() {
+  const key = getCurrentKey();
+  let base = "Eres un asistente útil y respetuoso.";
+  if (!key) return base;
+
+  if (currentMode === "characters") {
+    const ch = characters.find((c) => c.id === currentProfileId);
+    if (ch?.system) base = ch.system;
+  }
+  if (currentMode === "assistants") {
+    const as = ASSISTANTS_DATA.find((a) => a.id === currentProfileId);
+    if (as?.system) base = as.system;
+  }
+  if (currentMode === "tools") {
+    base = "Eres una herramienta de calma. Guías al usuario con pasos cortos.";
+  }
+
+  const lang = (currentLang || "es").toLowerCase();
+  const force =
+    lang === "es"
+      ? "Responde SIEMPRE en español neutro."
+      : lang === "pt"
+      ? "Responda SEMPRE em português brasileiro, claro e natural."
+      : "Always respond in natural, clear English.";
+
+  const safety =
+    "No des consejos médicos, legales ni financieros peligrosos. Si hay crisis o riesgo, recomienda ayuda profesional.";
+
+  return `${base}\n\n${force}\n${safety}`.trim();
+}
+
+async function sendToAI(userText) {
+  // guarda y pinta usuario
+  const chat = getCurrentChatArray();
+  chat.push({ sender: "Tú", text: userText, type: "sent" });
+  appendMessage("Tú", userText, "sent");
+  saveChatsToStorage();
+
+  // placeholder “typing”
+  appendMessage("HÁBLAME", "…", "received");
+
+  try {
+    const system = buildSystemPrompt();
 
     const res = await fetch(`${API_BASE}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        system,
+        message: userText,
+        lang: currentLang,
+        mode: currentMode,
+        profileId: currentProfileId,
+      }),
     });
 
-    if (!res.ok) {
-      const t = await safeText(res);
-      throw new Error(`API chat failed: ${res.status} ${t}`);
-    }
-
     const data = await res.json();
-    // accepts {reply:"..."} or {text:"..."} or string
-    if (typeof data === "string") return data;
-    return data.reply || data.text || "…";
-  }
+    const reply = data.reply || data.message || "No pude responder (error).";
 
-  async function safeText(res) {
-    try {
-      return await res.text();
-    } catch {
-      return "";
-    }
+    // reemplaza último “…” (simple: borramos y re-render)
+    chat.push({ sender: currentProfileName || "HÁBLAME", text: reply, type: "received" });
+    saveChatsToStorage();
+    renderChatForCurrentProfile();
+  } catch (e) {
+    chat.push({ sender: "HÁBLAME", text: "Error de conexión. Intenta de nuevo.", type: "received" });
+    saveChatsToStorage();
+    renderChatForCurrentProfile();
   }
-
-  // -----------------------------
-  // LOCAL STORAGE
-  // -----------------------------
-  function loadAllChats() {
-    try {
-      const raw = localStorage.getItem(LS_KEY);
-      return raw ? JSON.parse(raw) : {};
-    } catch {
-      return {};
-    }
-  }
-
-  function saveAllChats(chats) {
-    try {
-      localStorage.setItem(LS_KEY, JSON.stringify(chats));
-    } catch (e) {
-      console.warn("No se pudo guardar chats", e);
-    }
-  }
-})();
+}
