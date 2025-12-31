@@ -451,3 +451,19 @@ body {
 }
 
 
+/* ===== FIX INPUT VISIBLE EN MOBILE ===== */
+body {
+  padding-bottom: 90px;
+}
+
+.chat-input,
+.input-container,
+.message-input {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  padding: 10px;
+  z-index: 999;
+}
