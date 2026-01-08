@@ -7,7 +7,7 @@
    ========================= */
 
 /* ========= CONFIG ========= */
-const API_BASE = ""; // si ya usas algo, déjalo como lo tenías. Ej: "https://hablame.io"
+const API_BASE = "https://hablame-backend.onrender.com";
 let currentMode = "characters"; // characters | assistants | tools | forums | friends
 let currentProfileId = null;
 let currentProfileName = "—";
