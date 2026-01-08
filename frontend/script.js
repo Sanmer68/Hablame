@@ -102,13 +102,13 @@ const TOOLS_DATA = [
 ];
 
 /* ================= INICIO ================= */
-window.addEventListener("DOMContentLoaded", initApp);
+window.addEventListener("DOMContentLoaded", () => initApp());
+
 
 async function initApp() {
   loadLangFromStorage();
   loadChatsFromStorage();
   applyUILanguage();
-
   setupButtons();
   setupSend();
   setupMobileView();
@@ -527,6 +527,8 @@ async function sendToAI(userText) {
 
     const data = await res.json();
     const reply = data.reply;
+    console.log("REPLY BACKEND:", reply);
+
 
 
     // reemplaza último “…” (simple: borramos y re-render)
