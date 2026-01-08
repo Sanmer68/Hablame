@@ -526,7 +526,8 @@ async function sendToAI(userText) {
     });
 
     const data = await res.json();
-    const reply = data.reply || data.message || "No pude responder (error).";
+    const reply = data.reply;
+
 
     // reemplaza último “…” (simple: borramos y re-render)
     chat.push({ sender: currentProfileName || "HÁBLAME", text: reply, type: "received" });
