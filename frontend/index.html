@@ -2,24 +2,37 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
 
     <title>HÁBLAME – MVP</title>
     <link rel="stylesheet" href="style.css" />
   </head>
+
   <body>
     <div class="app" id="appRoot">
-      <!-- BARRA SUPERIOR -->
+      <!-- ================= BARRA SUPERIOR ================= -->
       <header class="topbar">
         <div class="logo">HÁBLAME</div>
 
         <nav class="top-tabs">
-          <button id="btnPersonajes" class="top-tab active">🧠 Personajes</button>
-          <button id="btnAsistentes" class="top-tab">👥 Asistentes</button>
-          <button id="btnJuegos" class="top-tab">🧘 Juegos y meditaciones</button>
-          <button id="btnForos" class="top-tab">💬 Foros</button>
-          <button id="btnAmigos" class="top-tab">❤️ Amigos</button>
+          <button id="btnPersonajes" class="top-tab active">
+            🧠 Personajes
+          </button>
+          <button id="btnAsistentes" class="top-tab">
+            👥 Asistentes
+          </button>
+          <button id="btnJuegos" class="top-tab">
+            🧘 Juegos y meditaciones
+          </button>
+          <button id="btnForos" class="top-tab">
+            💬 Foros
+          </button>
+          <button id="btnAmigos" class="top-tab">
+            ❤️ Amigos
+          </button>
         </nav>
 
         <!-- Selector de idioma -->
@@ -32,9 +45,9 @@
         </div>
       </header>
 
-      <!-- LAYOUT PRINCIPAL -->
+      <!-- ================= LAYOUT PRINCIPAL ================= -->
       <div class="layout">
-        <!-- PANEL IZQUIERDO -->
+        <!-- ===== PANEL IZQUIERDO ===== -->
         <aside class="sidebar">
           <section class="section">
             <h3 id="sidebarTitle">Personajes</h3>
@@ -42,42 +55,55 @@
           </section>
         </aside>
 
-        <!-- PANEL DERECHO: CHAT -->
+        <!-- ===== PANEL DERECHO / CHAT ===== -->
         <main class="chat-area">
           <header class="chat-header">
-            <!-- Flecha para móvil -->
-            <button id="backButton" class="back-btn" aria-label="Volver">
+            <!-- Flecha móvil -->
+            <button
+              id="backButton"
+              class="back-btn"
+              aria-label="Volver"
+            >
               ←
             </button>
 
             <div class="chat-header-info">
-              <div class="chat-title" id="chatTitle">Chat con IA</div>
-              <div class="chat-subtitle" id="chatSubtitle">
-                Personaje: <span id="currentProfileName">—</span>
+              <div class="chat-title" id="chatTitle">
+                Chat con IA
+              </div>
+              <div class="chat-subtitle">
+                Perfil:
+                <span id="currentProfileName">—</span>
               </div>
             </div>
           </header>
 
-          <!-- MENSAJES -->
-          <section id="chatWindow" class="messages"></section>
+          <!-- ===== MENSAJES (ID CORRECTO) ===== -->
+          <section id="messages" class="messages"></section>
 
-          <!-- INPUT ABAJO -->
+          <!-- ===== INPUT ===== -->
           <footer class="chat-input">
             <input
               id="userInput"
               type="text"
               placeholder="Escribe un mensaje..."
+              autocomplete="off"
             />
 
             <div class="chat-actions">
-              <button id="sendButton" class="btn-send">Enviar</button>
-              <button id="micButton" class="btn-mic">🎤</button>
+              <button id="sendButton" class="btn-send">
+                Enviar
+              </button>
+              <button id="micButton" class="btn-mic" disabled>
+                🎤
+              </button>
             </div>
           </footer>
         </main>
       </div>
     </div>
 
+    <!-- ================= SCRIPT ================= -->
     <script src="script.js"></script>
   </body>
 </html>
