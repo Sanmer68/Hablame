@@ -97,6 +97,26 @@ const UI_TEXT = {
     errorConexion: "Erro de conexão. Tente novamente.",
   },
 };
+const WELCOME_MESSAGE = {
+  es: `Hola.
+Este es un espacio seguro para escribir lo que sientes, sin pena y sin juicios.
+
+No tienes que explicarlo todo ni saber por dónde empezar.
+
+Cuando quieras, elige con quién hablar o simplemente escribe.`,
+  en: `Hi.
+This is a safe space to write what you feel, without shame or judgment.
+
+You don’t have to explain everything or know where to start.
+
+When you’re ready, choose who to talk to or simply start writing.`,
+  pt: `Olá.
+Este é um espaço seguro para escrever o que você sente, sem vergonha ou julgamentos.
+
+Você não precisa explicar tudo nem saber por onde começar.
+
+Quando quiser, escolha com quem falar ou simplesmente escreva.`
+};
 
 /* ========= ASISTENTES ========= */
 const ASSISTANTS_DATA = [
@@ -116,9 +136,28 @@ const TOOLS_DATA = [
 /* ========= DOM HELPERS ========= */
 const $ = (id) => document.getElementById(id);
 const t = () => UI_TEXT[currentLang] || UI_TEXT.es;
+function hasAnyChatHistory() {
+  try {
+    const raw = localStorage.getItem("hablame_chats");
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    return Object.keys(data || {}).length > 0;
+  } catch {
+    return false;
+  }
+}
 
 /* ================= INICIO ================= */
 window.addEventListener("DOMContentLoaded", () => initApp());
+// Bienvenida neutral: solo si NO hay historial y NO hay perfil seleccionado
+if (!hasAnyChatHistory() && !currentProfileId) {
+  clearChat();
+  appendMessage(
+    "HÁBLAME",
+    WELCOME_MESSAGE[currentLang] || WELCOME_MESSAGE.es,
+    "received"
+  );
+}
 
 async function initApp() {
   // 1) Carga preferencias
