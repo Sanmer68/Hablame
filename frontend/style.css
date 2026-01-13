@@ -247,6 +247,53 @@ body {
   font-size: 10px;
   color: #94a3b8;
 }
+/* =========================
+   WhatsApp look (compat JS .msg/.bubble)
+   ========================= */
+
+.messages{
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Wrapper que crea el JS */
+.msg{
+  display: flex;
+  width: 100%;
+}
+
+/* burbuja */
+.msg .bubble{
+  max-width: 78%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+}
+
+/* derecha (usuario) */
+.msg--sent{
+  justify-content: flex-end;
+}
+.msg--sent .bubble{
+  background: #dbeafe;
+  color: #1e3a8a;
+  border-bottom-right-radius: 6px;
+}
+
+/* izquierda (IA) */
+.msg--received{
+  justify-content: flex-start;
+}
+.msg--received .bubble{
+  background: #ffffff;
+  color: #1f2937;
+  border-bottom-left-radius: 6px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
 
 /* Input abajo */
 .chat-input {
@@ -448,19 +495,3 @@ body {
 }
 
 
-/* ===== FIX INPUT VISIBLE EN MOBILE ===== */
-body {
-  padding-bottom: 90px;
-}
-
-.chat-input,
-.input-container,
-.message-input {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #ffffff;
-  padding: 10px;
-  z-index: 999;
-}
