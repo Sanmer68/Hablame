@@ -346,6 +346,11 @@ body {
   width: 0;
   height: 0;
   display: none;
+  #userInput{
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 }
 
 
