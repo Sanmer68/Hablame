@@ -379,66 +379,108 @@ body {
 .btn-mic:hover {
   transform: translateY(-2px);
 }
-
-/* ---------- RESPONSIVE: MÓVIL ---------- */
+/* ---------- RESPONSIVE: MÓVIL + FIX iPhone ---------- */
 @media (max-width: 768px) {
-  body{
-    background: #ffffff;
+
+  html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden;
   }
 
-  .app{
-    width: 100%;
-    max-width: 100%;
-    border-radius: 0;
-    height: 100dvh;
-    overflow: hidden;
+  body {
+    background: #ffffff;
+    padding-top: 0 !important;
+    min-height: 100svh;
+    min-height: 100dvh;
+  }
+
+  .app {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100svh !important;
+    height: 100dvh !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
     display: flex;
     flex-direction: column;
   }
 
-  .layout{
+  .topbar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 999 !important;
+    padding-top: env(safe-area-inset-top) !important;
+  }
+
+  .layout {
     grid-template-columns: 1fr;
     flex: 1;
-    min-height: 0;
-  }
-
-  .chat-area{
-    display: none;
-    flex: 1;
-    min-height: 0;
-  }
-
-  .app.mobile-chat .chat-area{
-    display: flex;
-  }
-
-  .app.mobile-chat .sidebar{
-    display: none;
-  }
-
-  .back-btn{
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;  .chat-area{
-    display: flex;
-    flex-direction: column;
+    min-height: 0 !important;
     height: 100%;
   }
 
-  .messages{
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
+  .chat-area {
+    display: none;
+    flex: 1;
+    min-height: 0 !important;
+    height: 100%;
   }
 
-  .chat-input{
+  .app.mobile-chat .chat-area { display: flex; }
+  .app.mobile-chat .sidebar { display: none; }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Mensajes: aquí scrollea, no el input */
+  .messages {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 14px 12px calc(110px + env(safe-area-inset-bottom));
+  }
+
+  /* INPUT: sin scroll vertical/horizontal “raro” en móvil */
+  .chat-input {
     flex: 0 0 auto;
+    min-width: 0;
+    overflow: hidden;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
   }
 
+  #userInput {
+    min-width: 0;       /* CLAVE en flex para que no “desborde” */
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    overflow: hidden;   /* quita scroll vertical/horizontal */
+    resize: none;
   }
+
+  /* TOP TABS: scroll horizontal en móvil */
+  .top-tabs {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding: 6px 8px;
+    gap: 8px;
+  }
+
+  .top-tabs::-webkit-scrollbar { display: none; }
+  .top-tab { flex: 0 0 auto; }
 }
 
-   FIX iPhone / MÓVIL (NO BORRAR)
+FIX iPhone / MÓVIL (NO BORRAR)
    ========================= */
 @media (max-width: 768px) {
 
