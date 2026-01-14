@@ -169,7 +169,6 @@ body {
   flex-direction: column;
   background: #f7f7f7;
   min-height: 0;     /* 👈 SIN ESTO EL CHAT SE COME EL INPUT */
-  overflow: hidden;
 }
 
 
