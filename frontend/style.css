@@ -493,5 +493,6 @@ body {
 .top-tab{
   flex: 0 0 auto;               /* cada botón NO se encoge */
 }
+}
 
 

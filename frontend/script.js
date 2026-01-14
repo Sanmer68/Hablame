@@ -321,16 +321,22 @@ async function loadCharacters() {
 }
 
 async function ensureCharactersLoaded() {
-  if (charactersLoaded && characters.length) return;
+  if (charactersLoaded) return;
 
   if (!charactersLoadingPromise) {
     charactersLoadingPromise = (async () => {
-      await loadCharacters();
-      charactersLoadingPromise = null;
+      try {
+        await loadCharacters();
+      } finally {
+        charactersLoaded = true;
+        charactersLoadingPromise = null;
+      }
     })();
   }
+
   await charactersLoadingPromise;
 }
+
 
 /* ================= RENDER SIDEBAR ================= */
 function renderSidebar() {
