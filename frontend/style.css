@@ -169,6 +169,7 @@ body {
   flex-direction: column;
   background: #f7f7f7;
   min-height: 0;     /* 👈 SIN ESTO EL CHAT SE COME EL INPUT */
+  overflow: hidden;
 }
 
 
@@ -213,10 +214,13 @@ body {
 
 /* Mensajes */
 .messages {
-  flex: 1;
-  overflow-y: auto; 
-  min-height: 0;     /* 👈 Asegura que la zona se comprima bien */
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 14px 12px 110px; /* espacio SOLO para que el input no tape mensajes */
+  -webkit-overflow-scrolling: touch;
 }
+
 
 .message {
   max-width: 70%;
@@ -370,21 +374,9 @@ body {
 }
 
 /* ---------- RESPONSIVE: MÓVIL ---------- */
-@media (max-width: 768px) {
-  body{
-    background: #ffffff;}
-    .chat-input{
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 9999; 
-  padding-bottom: env(safe-area-inset-bottom);
-scroll-padding-bottom: 90px;
 
-}
 
-  }
+  
 
   .app{
     width: 100%;
