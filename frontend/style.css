@@ -378,7 +378,8 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 9999;padding-bottom: 90px;
+  z-index: 9999; 
+  padding-bottom: env(safe-area-inset-bottom);
 scroll-padding-bottom: 90px;
 
 }
