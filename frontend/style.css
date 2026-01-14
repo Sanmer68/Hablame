@@ -373,50 +373,48 @@ body {
 }
 
 /* ---------- RESPONSIVE: MÓVIL ---------- */
-
-
-  
+@media (max-width: 768px) {
+  body{
+    background: #ffffff;
+  }
 
   .app{
     width: 100%;
     max-width: 100%;
     border-radius: 0;
-
-    /* 👇 CLAVE: NO uses height fija en móvil */
-    height: auto;
-    min-height: 100svh;  /* iPhone moderno */
-    min-height: 100vh;   /* fallback */
-
+    height: 100dvh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-
   }
 
-
-
-  .layout {
+  .layout{
     grid-template-columns: 1fr;
+    flex: 1;
+    min-height: 0;
   }
 
-  .chat-area {
+  .chat-area{
     display: none;
+    flex: 1;
+    min-height: 0;
   }
 
-  .app.mobile-chat .chat-area {
+  .app.mobile-chat .chat-area{
     display: flex;
   }
 
-  .app.mobile-chat .sidebar {
+  .app.mobile-chat .sidebar{
     display: none;
   }
 
-  .back-btn {
+  .back-btn{
     display: inline-flex;
     align-items: center;
     justify-content: center;
   }
-}/* =========================
+}
+
    FIX iPhone / MÓVIL (NO BORRAR)
    ========================= */
 @media (max-width: 768px) {
