@@ -349,7 +349,7 @@ body {
    RESPONSIVE MÓVIL (UN SOLO BLOQUE)
    ========================= */
   
-@media (max-width: 768px) {  html, body{
+@media (max-width: 768px) { html, body{
     height: 100%;
     overflow: hidden;
   }
@@ -363,7 +363,7 @@ body {
     inset: 0;
     width: 100%;
   }
-
+  }
 
   body {
     background: #ffffff;
