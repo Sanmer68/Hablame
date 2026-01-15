@@ -709,3 +709,15 @@ function guideToolResponse(userText) {
   // genérico
   return `Ok. Vamos paso a paso.\nDime: ¿qué sientes ahora (0–10) y dónde lo sientes en el cuerpo?`;
 }
+(() => {
+  const setH = () => {
+    const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.documentElement.style.setProperty("--appH", `${Math.round(h)}px`);
+  };
+  setH();
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", setH);
+    window.visualViewport.addEventListener("scroll", setH);
+  }
+  window.addEventListener("resize", setH);
+})();
