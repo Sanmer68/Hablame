@@ -427,6 +427,16 @@ function selectProfile(id, name) {
   currentProfileId = id;
   currentProfileName = name;
   $("currentProfileName") && ($("currentProfileName").textContent = name);
+// Desktop: asegurar layout con sidebar + chat visible
+const app = $("appRoot");
+const chatArea = document.querySelector(".chat-area");
+const sidebar = document.querySelector(".sidebar");
+
+if (window.innerWidth >= 768) {
+  if (app) app.classList.remove("mobile-chat");
+  if (chatArea) chatArea.style.display = "flex";
+  if (sidebar) sidebar.style.display = "block";
+}
 
   renderSidebar();
   renderChatForCurrentProfile();
