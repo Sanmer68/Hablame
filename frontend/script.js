@@ -725,7 +725,7 @@ function guideToolResponse(userText) {
 (() => {
   const allowScroll = (el) =>
   el && el.closest && (el.closest('.messages') || el.closest('.chat-input'));
-}
+
 
   document.addEventListener('touchmove', (e) => {
     if (!allowScroll(e.target)) e.preventDefault();
