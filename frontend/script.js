@@ -721,3 +721,29 @@ function guideToolResponse(userText) {
   }
   window.addEventListener("resize", setH);
 })();
+// iOS: bloquea scroll/bounce del documento, deja scroll solo en .messages
+(() => {
+  const allowScroll = (el) => el && el.closest && el.closest('.messages');
+
+  document.addEventListener('touchmove', (e) => {
+    if (!allowScroll(e.target)) e.preventDefault();
+  }, { passive: false });
+
+  // Opcional: evita que arrastrar desde input/headers “mueva” la página
+  document.addEventListener('touchstart', (e) => {
+    if (!allowScroll(e.target)) e.stopPropagation();
+  }, { passive: true });
+})();
+// iOS: bloquea scroll/bounce del documento, deja scroll solo en .messages
+(() => {
+  const allowScroll = (el) => el && el.closest && el.closest('.messages');
+
+  document.addEventListener('touchmove', (e) => {
+    if (!allowScroll(e.target)) e.preventDefault();
+  }, { passive: false });
+
+  // Opcional: evita que arrastrar desde input/headers “mueva” la página
+  document.addEventListener('touchstart', (e) => {
+    if (!allowScroll(e.target)) e.stopPropagation();
+  }, { passive: true });
+})();
