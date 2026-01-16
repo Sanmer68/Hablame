@@ -344,11 +344,18 @@ body {
 }
 
 .btn-mic:hover { transform: translateY(-2px); }
+/* ===== DESKTOP BASE ===== */
+.layout { display: flex; height: 100%; }
+
+.sidebar { display: block; width: 320px; flex: 0 0 320px; overflow: auto; }
+
+.chat-area { display: flex; flex: 1; min-width: 0; }
 
 /* =========================
    RESPONSIVE MÓVIL (UN SOLO BLOQUE)
    ========================= */
-  :root{ --appH: 100dvh; }
+ 
+   :root{ --appH: 100dvh; }
 
 @media (max-width: 768px) {
 
