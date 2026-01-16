@@ -352,20 +352,20 @@ body {
 
 @media (max-width: 768px) {
 
-    html, body{
-    height: 100%;
-    overflow: hidden;
-    overscroll-behavior: none;.messages{
+   html, body{
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.messages{
   touch-action: pan-y;
 }
 
+
   }
 
-  body{
-    position: fixed;
-    inset: 0;
-    width: 100%;
-  }
+  
 
   .app{
     position: fixed;
@@ -420,4 +420,4 @@ body {
   .chat-input {
     padding-bottom: calc(10px + env(safe-area-inset-bottom));
   }
-}
+

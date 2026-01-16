@@ -724,7 +724,11 @@ function guideToolResponse(userText) {
 // iOS: bloquea scroll/bounce del documento, deja scroll solo en .messages
 (() => {
   const allowScroll = (el) =>
-  el && el.closest && (el.closest('.messages') || el.closest('.chat-input'));
+  el && el.closest && (
+    el.closest('.messages') ||
+    el.closest('.chat-input') ||
+    el.closest('.top-tabs')
+  );
 
 
   document.addEventListener('touchmove', (e) => {
