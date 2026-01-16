@@ -43,7 +43,7 @@ const UI_TEXT = {
     sidebarForums: "Foro",
     sidebarFriends: "Amigos",
 
-    chatTitle: "Chat con IA",
+    chatTitle: "Chat",
     placeholder: "Escribe un mensaje...",
     noProfileSelected: "Elige primero un personaje o asistente.",
     forumsConstruction: "Los foros están en construcción.",

@@ -129,7 +129,7 @@ function setMode(mode) {
   if (mode === 'chat') {
     tabChat.classList.add('tab--active');
     tabForum.classList.remove('tab--active');
-    title.textContent = 'Chat con IA';
+    title.textContent = 'Chat';
   } else {
     tabForum.classList.add('tab--active');
     tabChat.classList.remove('tab--active');
@@ -241,7 +241,7 @@ function appendMessage(from, text, type) {
 }
 
 window.addEventListener('DOMContentLoaded', initApp);
-// ================= CHAT CON IA: conexión con backend =================
+// ================= CHAT: conexión con backend =================
 
 document.addEventListener('DOMContentLoaded', () => {
   const API_BASE = 'http://localhost:3000';
