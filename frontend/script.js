@@ -149,15 +149,7 @@ function hasAnyChatHistory() {
 
 /* ================= INICIO ================= */
 window.addEventListener("DOMContentLoaded", () => initApp());
-// Bienvenida neutral: solo si NO hay historial y NO hay perfil seleccionado
-if (!hasAnyChatHistory() && !currentProfileId) {
-  clearChat();
-  appendMessage(
-    "HÁBLAME",
-    WELCOME_MESSAGE[currentLang] || WELCOME_MESSAGE.es,
-    "received"
-  );
-}
+
 
 async function initApp() {
   // 1) Carga preferencias
@@ -181,6 +173,15 @@ async function initApp() {
   // 5) Render final
   renderSidebar();
   renderChatForCurrentProfile();
+}
+// Bienvenida SOLO después de carga completa
+if (!hasAnyChatHistory() && currentProfileId) {
+  clearChat();
+  appendMessage(
+    "HÁBLAME",
+    WELCOME_MESSAGE[currentLang] || WELCOME_MESSAGE.es,
+    "received"
+  );
 }
 
 /* ================= SETUP UI ================= */
